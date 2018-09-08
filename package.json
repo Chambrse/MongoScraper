@@ -1,0 +1,35 @@
+{
+  "name": "mongoscraper",
+  "version": "1.0.0",
+  "description": "A mongoDB and cheerio app for viewing and commenting on news articles",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chambrse/MongoScraper.git"
+  },
+  "keywords": [
+    "mongo",
+    "cheerio",
+    "scraper"
+  ],
+  "author": "Shane Chambry",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Chambrse/MongoScraper/issues"
+  },
+  "homepage": "https://github.com/Chambrse/MongoScraper#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "cheerio": "^1.0.0-rc.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.3",
+    "express-handlebars": "^3.0.0",
+    "hbs": "^4.0.1",
+    "mongoose": "^5.2.13",
+    "morgan": "^1.9.0",
+    "request": "^2.88.0"
+  }
+}
