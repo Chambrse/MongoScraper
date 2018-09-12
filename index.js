@@ -5,8 +5,11 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require("mongoose");
 
+var cheerio = require("cheerio");
+var request = require("request");
+
 var indexRouter = require('./routes');
-var usersRouter = require('./routes/users');
+// var usersRouter = require('./routes/users');
 
 var db = require("./models");
 
@@ -29,15 +32,15 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+// app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -47,9 +50,57 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-app.listen(PORT, function () {
-  // Log (server-side) when our server has started
-  console.log("Server listening on: http://localhost:" + PORT);
+request("https://news.blizzard.com/en-us", function (error, response, html) {
+
+  // Load the HTML into cheerio and save it to a variable
+  // '$' becomes a shorthand for cheerio's selector commands, much like jQuery's '$'
+  var $ = cheerio.load(html);
+
+  // An empty array to save the data that we'll scrape
+  var results = [];
+
+  // With cheerio, find each p-tag with the "title" class
+  // (i: iterator. element: the current element)
+  $("div.ArticleListItem").each(function (i, element) {
+
+    // Save the text of the element in a "title" variable
+    var title = $(element).find($(".ArticleListItem-title")).text();
+
+    var subtitle = $(element).find($(".ArticleListItem-label")).text();
+
+    var description = $(element).find($(".ArticleListItem-description")).text();
+    // In the currently selected element, look at its child elements (i.e., its a-tags),
+    // then save the values for any "href" attributes that the child elements may have
+    var link = "https://news.blizzard.com" + $(element).children().attr("href");
+
+    // Save these results in an object that we'll push into the results array we defined earlier
+    results.push(/* {
+      insertOne:
+      {
+        "document": */
+        {
+          subtitle: subtitle,
+          title: title,
+          description: description,
+          link: link
+        }
+      /*} 
+    } */);
+
+  });
+
+  db.Article.create(results, function (error, Result) {
+
+    app.listen(PORT, function () {
+      // Log (server-side) when our server has started
+      console.log("Server listening on: http://localhost:" + PORT);
+    });
+
+  });
+
+
+
 });
+
 
 module.exports = app;
