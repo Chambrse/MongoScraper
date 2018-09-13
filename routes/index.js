@@ -1,21 +1,16 @@
 var express = require('express');
 var router = express.Router();
-var cheerio = require("cheerio");
-var request = require("request");
+
 var db = require("../models");
 
 
 
-/* GET home page. */
+/* GET home page. find all the articles in the database, then render the home page with each article on it. */
 router.get('/', function (req, res, next) {
-
-  console.log("in router");
 
   db.Article.find({},{},{ sort:{
     date_added: -1 
 }}).populate("comments").then(function(docs) {
-
-    // res.json(docs);
 
     res.render('index', {
       title: 'Blizzard Scraper',
@@ -30,23 +25,26 @@ router.get('/', function (req, res, next) {
 
 });
 
+
+// Create a comment, and add the id to the comments list on the associated article, then redirect to home.
 router.post('/comment', function (req, res, next) {
 
-  console.log(req.body);
-
   db.Comment.create(req.body).then(function (comment) {
-    console.log(comment);
     return db.Article.findOneAndUpdate({_id: req.body.id}, { $push: { comments: comment._id } }, { new: true });
   })
   .then(function (article) {
-    console.log(article);
     res.redirect('/');
   });
 
 });
 
-router.get('/bootstrap', function (req, res, next) {
-  res.render('index', { title: "GameScraper" });
+// Delete the comment from the collection, then send true, the page will then be reloaded.
+router.delete('/delete/:commentId', function(req, res, next) {
+  db.Comment.findByIdAndDelete({ _id: req.params.commentId}).then(function (result) {
+    res.send(true);
+  }).catch(function (err) {
+    console.log("error", err);
+  });
 });
 
 module.exports = router;
